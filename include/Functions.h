@@ -61,8 +61,8 @@ Vector2d dvdt_increment(Particle p1, Particle p2)
 	Vector2d dw = weightGradient(p1.x - p2.x);
 	Vector2d incre = -p2.m * (p1.p + p2.p) / (p1.rho * p2.rho) * dw;
 	// Vector2d incre = -p2.m * (p1.p / (p1.rho * p1.rho) + p2.p / (p2.rho * p2.rho) ) * dw;
-	//if (p2.type == Real)
-		//incre += artificial_viscosity(p1, p2) / p1.m;
+	if (p2.type == Real)
+		incre -= p2.m * artificial_viscosity(p1, p2) * dw;
 	if (p2.type == Ghost)
 		incre += boundary_force(p1.x, p2.x, dx);
 	return incre;

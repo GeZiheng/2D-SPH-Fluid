@@ -18,5 +18,4 @@ public:
 	vector<int> findNeighbors(int id, double radius);	// find neighbors of one particle
 	void addGhostParticles();							// add ghost particles
 	void deleteGhostParticles();						// delete ghost particles
-	void handleCollisions();							// correct particle positions for collisions
 };

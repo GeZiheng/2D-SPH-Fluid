@@ -21,6 +21,7 @@ double water_height;		// height of water
 double dom_size;			// size of simulation domain
 double end_t;				// end time
 int frame_num;				// number of frame
+int temp_num;				// temporary number counter (for density reinit)
 double frame_dt;			// frame dt
 
 Simulator::Simulator()
@@ -112,6 +113,7 @@ void Simulator::init()
 	for (i = 8; i < s.length(); i++)
 		str.push_back(s[i]);
 	dt = stod(str);
+	temp_num = 0;
 
 	// get end_t from file
 	str.clear();
@@ -201,6 +203,9 @@ void Simulator::corrector()
 			drho_dt += drhodt_increment(pts_sys_pre.particles[i], pts_sys_pre.particles[neighbors[j]]);
 		}
 		pts_sys.particles[i].rho += drho_dt * dt;
+		// density >= 1
+		//if (pts_sys.particles[i].rho < 1)
+		//	pts_sys.particles[i].rho = 1;
 	}
 
 	/* evolve particle velocity */
@@ -248,25 +253,26 @@ void Simulator::writeDataa(int frame_num)
 	myfile.close();
 }
 
-void Simulator::densityRecons()
+void Simulator::densityReinit()
 {
-	double rho_sum, weight_sum, w;
+	double m_sum, v_sum, w;
 	int i, j;
 	vector<int> neighbors;
+	pts_sys.countParticlesOnGrid();
 	for (i = 0; i < pts_sys.n_real; i++)
 	{
-		rho_sum = 0;
-		weight_sum = 0;
+		w = weightFunction(Vector2d(0,0));
+		m_sum = pts_sys.particles[i].m * w;
+		v_sum = pts_sys.particles[i].m / pts_sys.particles[i].rho * w; 
 		neighbors = pts_sys.findNeighbors(i, 3.0 * h);
 		for (j = 0; j < neighbors.size(); j++)
 		{
 			w = weightFunction(pts_sys.particles[i].x - pts_sys.particles[neighbors[j]].x);
-			rho_sum += pts_sys.particles[neighbors[j]].rho * w;
-			weight_sum += w;
+			m_sum += pts_sys.particles[neighbors[j]].m * w;
+			v_sum += pts_sys.particles[neighbors[j]].m / pts_sys.particles[neighbors[j]].rho * w;
 		}
-		pts_sys.particles[i].rho = rho_sum / weight_sum;
+		pts_sys.particles[i].rho = m_sum / v_sum;
 	}
-
 }
 
 void Simulator::oneTimeStep()
@@ -276,14 +282,19 @@ void Simulator::oneTimeStep()
 	{
 		writeData(frame_num);
 		//writeDataa(frame_num);
+		if (t < frame_num * frame_dt)
+			dt = frame_num * frame_dt - t;
 		frame_num++;
-		//if (t < frame_num * frame_dt)
-		//	dt = frame_num * frame_dt - t;
-		// densityRecons();
 	}
 	predictor();
 	corrector();
 	t += dt;
+	temp_num++;
+	if (temp_num == 20)
+	{
+		//densityReinit();
+		temp_num = 0;
+	}
 	dt = tmp_dt;
 	cout << t << endl;
 }

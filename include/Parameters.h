@@ -19,6 +19,7 @@ extern double water_height;			// height of water
 extern double dom_size;				// size of domain
 extern double end_t;				// end time
 extern int frame_num;				// number of frame
+extern int temp_num;				// temporary number counter (for density reinit)
 extern double frame_dt;				// frame dt
 
 #endif

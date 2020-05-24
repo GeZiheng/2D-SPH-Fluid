@@ -76,7 +76,7 @@ void ParticleSystem::addGhostParticles()
 			{
 				l = grid.elem[i][grid.wid + res - 1 - j][k];
 				new_x = particles[l].x.x();
-				new_y = 2.0 * dom_size - particles[l].x.y();
+				new_y = 2.0 * res * dx - particles[l].x.y();
 				new_vx = particles[l].v.x();
 				new_vy = - particles[l].v.y();
 				ghost = Particle(new_x, new_y, new_vx, new_vy, particles[l].rho, particles[l].p, particles[l].m, Ghost);
@@ -101,8 +101,7 @@ void ParticleSystem::addGhostParticles()
 			for (k = 0; k < grid.elem[grid.wid + res - 1 - i][j].size(); k++)
 			{
 				l = grid.elem[grid.wid + res - 1 - i][j][k];
-				new_x = 2.0 * dom_size - particles[l].x.x();
-				// cout << new_x << endl;
+				new_x = 2.0 * res * dx - particles[l].x.x();
 				new_y = particles[l].x.y();
 				new_vx = - particles[l].v.x();
 				new_vy = particles[l].v.y();
@@ -123,7 +122,6 @@ void ParticleSystem::addGhostParticles()
 		cout << endl;
 	}
 	*/
-	
 }
 
 void ParticleSystem::deleteGhostParticles()
@@ -143,19 +141,4 @@ void ParticleSystem::deleteGhostParticles()
 		}
 	while (particles.size() > n_real)
 		particles.pop_back();
-}
-
-void ParticleSystem::handleCollisions()
-{
-	for (int i = 0; i < n_real; i++)
-	{
-		if (particles[i].x.x() < 0)
-			particles[i].x = Vector2d(0.001, particles[i].x.y());
-		if (particles[i].x.x() > 1)
-			particles[i].x = Vector2d(0.999, particles[i].x.y());
-		if (particles[i].x.y() < 0)
-			particles[i].x = Vector2d(particles[i].x.x(), 0.001);
-		if (particles[i].x.y() > 1)
-			particles[i].x = Vector2d(particles[i].x.x(), 0.999);
-	}
 }
